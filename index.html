@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoRoutine - Protótipo Entregável</title>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --secondary: #81c784;
+      --bg: #f4f7f5;
+      --text: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .badge-impacto {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 5px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin: 20px 0;
+      transition: transform 0.3s;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #1b5e20;
+    }
+
+    /* Resultado style */
+    .result-box {
+      display: none;
+      animation: fadeIn 0.5s ease;
+      margin-top: 20px;
+      border-top: 2px dashed #eee;
+      padding-top: 20px;
+      text-align: left;
+    }
+
+    .impact-card {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+
+    .eco-card {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+
+    .score-badge {
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .gamification {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 1.2em;
+    }
+
+    .trophy {
+      font-size: 2em;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌱 EcoRoutine</h1>
+  <p>Diagnóstico & Impacto Socioambiental</p>
+  <div class="badge-impacto">ODS 7 & 13</div>
+</header>
+
+<div class="container">
+  <h3>📊 Comparativo de Consumo</h3>
+  <div class="input-group">
+    <label>Conta Anterior (Mês Passado):</label>
+    <input type="number" id="anterior" placeholder="R$ 0,00">
+  </div>
+  <div class="input-group">
+    <label>Conta Atual (Este Mês):</label>
+    <input type="number" id="atual" placeholder="R$ 0,00">
+  </div>
+  <button onclick="calcularImpacto()">Gerar Diagnóstico</button>
+
+  <div class="result-box" id="resultado">
+    <div class="score-badge">
+      <span id="score">0</span>/100
+    </div>
+    
+    <div class="impact-card">
+      <strong>💰 Economia gerada:</strong><br>
+      <span id="economia">R$ 0,00</span> por mês
+    </div>
+
+    <div class="eco-card">
+      <strong>🌍 impacto-CO2 evitado:</strong><br>
+      <span id="co2">0</span> kg/CO2
+    </div>
+
+    <div class="gamification" id="rank">
+      <span class="trophy">🥉</span>
+      <div>Iniciante Verde</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function calcularImpacto() {
+  let anterior = parseFloat(document.getElementById("anterior").value);
+  let atual = parseFloat(document.getElementById("atual").value);
+
+  if (!anterior || !atual) {
+    alert("Preencha os valores para comparar!");
+    return;
+  }
+
+  // Cálculos
+  let diferenca = anterior - atual;
+  let economia = diferenca > 0 ? diferenca : 0;
+  let score = Math.min(100, Math.max(0, (economia / anterior) * 100 * 4 + 20)); 
+  
+  // Cálculo simplificado de CO2 (kWh economizado * 0.4kg/kWh)
+  // Vamos estimar R$ 0.70 por kWh pra simplificar a conta de energia
+  let kwh = economia / 0.70; 
+  let co2 = kwh * 0.4;
+
+  document.getElementById("score").innerText = score.toFixed(0);
+  document.getElementById("economia").innerText = "R$ " + economia.toFixed(2);
+  document.getElementById("co2").innerText = co2.toFixed(2);
+
+  // Gamificação
+  let rankDiv = document.getElementById("rank");
+  if (score >= 90) {
+    rankDiv.innerHTML = "<span class='trophy'>🏆</span><div>Mestre Sustentável</div>";
+  } else if (score >= 70) {
+    rankDiv.innerHTML = "<span class='trophy'>🥇</span><div>Eco Guerreiro</div>";
+  } else if (score >= 50) {
+    rankDiv.innerHTML = "<span class='trophy'>🥈</span><div>Amigo da Natureza</div>";
+  } else {
+    rankDiv.innerHTML = "<span class='trophy'>🌱</span><div>Iniciante Verde</div>";
+  }
+
+  document.getElementById("resultado").style.display = "block";
+}
+</script>
+
+</body>
+</html>
